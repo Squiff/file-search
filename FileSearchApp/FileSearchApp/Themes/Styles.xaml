@@ -1,0 +1,16 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:FileSearchApp.Themes"
+                    xmlns:view="clr-namespace:FileSearchApp"
+                    >
+    <!-- Converters -->
+    <view:FileFilterTypeConverter x:Key="FileFilterTypeConverter"/>
+    <view:TextFilterTypeConverter x:Key="TextFilterTypeConverter"/>
+    <view:StartStopTextConverter x:Key="StartStopTextConverter"/>
+    <view:BoolVisibilityConverter x:Key="BoolVisibilityConverter"/>
+
+    <!-- Styles -->
+    <Style x:Key="WindowStyle" TargetType="Window">
+        <Setter Property="Background" Value="{StaticResource MaterialDesignPaper}"/>
+    </Style>
+</ResourceDictionary>

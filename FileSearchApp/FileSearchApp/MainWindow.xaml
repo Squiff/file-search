@@ -1,0 +1,171 @@
+﻿<Window x:Class="FileSearchApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FileSearchApp"
+        xmlns:view="clr-namespace:FileSearchApp"
+        xmlns:viewmodel="clr-namespace:FileSearchApp.ViewModel"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance viewmodel:FileSearchViewModel, IsDesignTimeCreatable=True}"
+        Title="Find in Files" 
+        Height="600" 
+        Width="800"
+        Style="{StaticResource WindowStyle}">
+    <Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Row="0"
+                  Grid.Column="1">
+                <StackPanel>
+                    <GroupBox Header="Search Folder"
+                              Style="{DynamicResource MaterialDesignCardGroupBox}"
+                              Padding="4"
+                              Margin="0 5">
+                        <GroupBox.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Height="16">
+                                    <materialDesign:PackIcon Kind="Folder" Height="16" Width="16" VerticalAlignment="Center" />
+                                    <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="{Binding}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </GroupBox.HeaderTemplate>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox Width="500" 
+                                    Text="{Binding DirectorySearchPath}"
+                                    x:Name="SearchFolder"
+                                    Margin="0 0 0 15"/>
+                                <Button Content="Browse" Margin="10 0" 
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    Click="Browse_Click"
+                                    FontSize="12"
+                                    Height="25"
+                                    VerticalAlignment="Top" />
+                            </StackPanel>
+                            <!-- Folder Options -->
+                            <StackPanel Orientation="Horizontal" Margin="0 0 0 5">
+                                <CheckBox Content="Search Subfolders" IsChecked="{Binding DirectorySearchSubfolder}" Margin="0 0 15 0" />
+                                <CheckBox Content="Search Hidden Folders" IsChecked="{Binding DirectorySearchHidden}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+                    <GroupBox 
+                        Header="Search Files"
+                        Style="{DynamicResource MaterialDesignCardGroupBox}"
+                        Padding="4"
+                        Margin="0 5">
+                        <GroupBox.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Height="16">
+                                    <materialDesign:PackIcon Kind="File" Height="16" Width="16" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </GroupBox.HeaderTemplate>
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="4">
+                            <ComboBox SelectedItem="{Binding FileFilterType}" Margin="0 0 10 0" ItemsSource="{Binding FileFilterTypes}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource FileFilterTypeConverter} }"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBox Text="{Binding FileFilterValue}" Height="25" Width="500"/>
+                        </StackPanel>
+                    </GroupBox>
+                    <GroupBox 
+                        Header="Search Text"
+                        Style="{DynamicResource MaterialDesignCardGroupBox}"
+                        Padding="4"
+                        Margin="0 5 0 10">
+                        <GroupBox.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Height="16">
+                                    <materialDesign:PackIcon Kind="TextBoxSearchOutline" Height="16" Width="16" VerticalAlignment="Center" />
+                                    <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="{Binding}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </GroupBox.HeaderTemplate>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="2">
+                                <ComboBox SelectedItem="{Binding TextFilterType}" Margin="0 0 10 0" ItemsSource="{Binding TextFilterTypes}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource TextFilterTypeConverter} }"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBox Text="{Binding TextFilterValue}" Height="25" Width="500" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" Margin="0 10 0 5">
+                                <CheckBox Content="Match Case" IsChecked="{Binding MatchCase}" Margin="0 0 15 0"/>
+                                <CheckBox Content="Match Whole Word Only" IsChecked="{Binding MatchWord}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+                    <Button Content="{Binding IsRunning, Converter={StaticResource StartStopTextConverter}}" 
+                            Command="{Binding SearchCommand}"
+                            Margin="0 0 0 5"/>
+                    <ProgressBar IsIndeterminate="True" 
+                                 Visibility="{Binding IsRunning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                </StackPanel>
+            </Grid>
+            <!-- Result Grid -->
+            <GroupBox  
+                Grid.Row="1" Grid.Column="1"
+                Header="Results"
+                Style="{DynamicResource MaterialDesignCardGroupBox}"
+                Padding="4"
+                Margin="0 5 0 10"
+                Visibility="{Binding ResultsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <GroupBox.HeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Height="16">
+                            <materialDesign:PackIcon Kind="Poll" Height="16" Width="16" VerticalAlignment="Center" />
+                            <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="{Binding}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </GroupBox.HeaderTemplate>
+                <Grid >
+                    <DataGrid
+                        ItemsSource="{Binding Results}"
+                        AutoGenerateColumns="False"
+                        CanUserSortColumns="True"
+                        CanUserAddRows="False"
+                        SelectionUnit="Cell"
+                        SelectionMode="Extended"
+                        materialDesign:DataGridAssist.CellPadding="4 2 4 2" 
+                        ScrollViewer.CanContentScroll="True"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Directory}" Header="Directory"/>
+                            <DataGridTextColumn Binding="{Binding FileName}" Header="File Name"/>
+                            <DataGridTemplateColumn>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button
+                                            Command="{Binding OpenCommand}" 
+                                            Style="{StaticResource MaterialDesignToolButton}"
+                                            Margin="20 0 0 0">
+                                            <materialDesign:PackIcon Kind="OpenInNew"/>
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </GroupBox>
+        </Grid>
+    </Grid>
+</Window>
