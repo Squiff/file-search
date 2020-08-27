@@ -182,35 +182,51 @@ namespace FileSearchApp.ViewModel
             _cancelToken = new CancellationTokenSource();
 
             Results.Clear();
-
-            // DirectorySearch.EnumerateFiles will provide each directory (and relevant subdirectories) that should be searched
+            
+            // get each directory that should be searched
             foreach (string file in DirectorySearch.EnumerateFiles())
             {
                 // check if search has been stopped
                 if (_cancelToken.IsCancellationRequested)
                     break;
 
-                // file filter matches
-                if (FileFilter.Evaluate(file))
-                {
-                    string fileContents = await File.ReadAllTextAsync(file);
+                bool result = await Task.Run(() => SearchFile(file));
 
-                    // evaluate text filter
-                    if (TextFilter.Evaluate(fileContents))
-                    {
-                        var FM = new FileMatch(file);
-                        Results.Add(FM);
-                        await Task.Delay(1); // delay allows Results ui to refresh
-                    }
+                if (result == true)
+                {
+                    var FM = new FileMatch(file);
+                    Results.Add(FM);
                 }
             }
 
             IsRunning = false;
+
         }
 
+        /// <summary>
+        /// Stop an in progress search
+        /// </summary>
         private void StopSearch()
         {
             _cancelToken.Cancel();
+        }
+
+        /// <summary>
+        /// Evaluates the File and Text filters for a provided file. Returns true if both match, otherwise false.
+        /// </summary>
+        private async Task<bool> SearchFile(string filePath)
+        {
+            // file filter matches
+            if (FileFilter.Evaluate(filePath))
+            {
+                string fileContents = await File.ReadAllTextAsync(filePath);
+
+                // evaluate text filter
+                if (TextFilter.Evaluate(fileContents))
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>
