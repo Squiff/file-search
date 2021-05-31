@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Ookii.Dialogs.Wpf;
+using Microsoft.Extensions.Configuration;
 
 namespace FileSearchApp
 {
@@ -25,7 +26,18 @@ namespace FileSearchApp
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new FileSearchViewModel();
+            AppSettings appSettings = GetSettings();
+
+            DataContext = new FileSearchViewModel(appSettings);
+        }
+
+        private AppSettings GetSettings()
+        {
+            ConfigurationBuilder builder = new ConfigurationBuilder();
+            
+            builder.AddJsonFile("appsettings.json");
+            IConfigurationRoot config = builder.Build();
+            return config.Get<AppSettings>();
         }
 
         private FileSearchViewModel ViewModel

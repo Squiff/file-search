@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 
 namespace FileSearchApp.ViewModel
 {
@@ -23,14 +25,16 @@ namespace FileSearchApp.ViewModel
         public TextFilterTypeVM[] TextFilterTypes { get; }
         public ICommand SearchCommand { get; private set; }
 
+        private AppSettings _appSettings;
         private CancellationTokenSource _cancelToken;
         private bool _isRunning;
         private bool _resultsVisibile;
 
-        public FileSearchViewModel()
+        public FileSearchViewModel(AppSettings appSettings)
         {
             FileFilterTypes = (FileFilterTypeVM[])Enum.GetValues(typeof(FileFilterTypeVM));
             TextFilterTypes = (TextFilterTypeVM[])Enum.GetValues(typeof(TextFilterTypeVM));
+            _appSettings = appSettings;
 
             InitCommands();
         }
@@ -190,13 +194,18 @@ namespace FileSearchApp.ViewModel
                 if (_cancelToken.IsCancellationRequested)
                     break;
 
-                bool result = await Task.Run(() => SearchFile(file));
+                //bool result = await SearchFile(file); // blocks ui thread because there are CPU bound operations
+                bool result = await Task.Run(() => SearchFile(file)); // runs on a different thread
 
                 if (result == true)
                 {
                     var FM = new FileMatch(file);
                     Results.Add(FM);
                 }
+
+                // stop if limit reached
+                if (Results.Count >= _appSettings.LimitResults)
+                    break;
             }
 
             IsRunning = false;
@@ -219,6 +228,7 @@ namespace FileSearchApp.ViewModel
             // file filter matches
             if (FileFilter.Evaluate(filePath))
             {
+                // TODO: Do not read entire file
                 string fileContents = await File.ReadAllTextAsync(filePath);
 
                 // evaluate text filter
