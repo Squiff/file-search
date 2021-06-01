@@ -237,8 +237,17 @@ namespace FileSearchApp.ViewModel
                 return false;
 
 
-            // need entire contents to test regex
-            string fileContents = await File.ReadAllTextAsync(filePath);
+
+            string fileContents;
+            try
+            {
+                // need entire contents to test regex
+                fileContents = await File.ReadAllTextAsync(filePath);
+            } catch (Exception e)
+            {
+                //throw e
+                return false; // ignore file read errors
+            }
 
             // evaluate text filter
             if (TextFilter.Evaluate(fileContents))
