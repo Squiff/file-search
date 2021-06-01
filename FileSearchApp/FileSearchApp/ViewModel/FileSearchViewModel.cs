@@ -226,15 +226,23 @@ namespace FileSearchApp.ViewModel
         private async Task<bool> SearchFile(string filePath)
         {
             // file filter matches
-            if (FileFilter.Evaluate(filePath))
-            {
-                // TODO: Do not read entire file
-                string fileContents = await File.ReadAllTextAsync(filePath);
+            if (FileFilter.Evaluate(filePath) == false)
+                return false;
 
-                // evaluate text filter
-                if (TextFilter.Evaluate(fileContents))
-                    return true;
-            }
+            // dont read files over certain size (setting in MB)
+            long fileSizeLimit = 1024 * 1024 * _appSettings.FileSizeLimit;
+            long fileSize = new FileInfo(filePath).Length;
+
+            if (fileSizeLimit < fileSize)
+                return false;
+
+
+            // need entire contents to test regex
+            string fileContents = await File.ReadAllTextAsync(filePath);
+
+            // evaluate text filter
+            if (TextFilter.Evaluate(fileContents))
+                return true;
 
             return false;
         }

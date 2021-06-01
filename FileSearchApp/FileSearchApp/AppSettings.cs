@@ -7,5 +7,6 @@ namespace FileSearchApp
     class AppSettings
     {
         public int LimitResults { get; set; }
+        public int FileSizeLimit { get; set; }
     }
 }
